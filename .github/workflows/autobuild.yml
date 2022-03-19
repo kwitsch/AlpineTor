@@ -1,6 +1,7 @@
 name: autobuild
 
 on:
+  push:
    tags:
     - 0.*
   
