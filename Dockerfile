@@ -1,4 +1,5 @@
-FROM alpine 
+FROM alpine:3.15
+#COPY --from=wcsiu/tdlib:1.8-alpine /lib/libz.a /usr/lib/libz.a
 
 ARG TORVERSION
 
@@ -9,22 +10,25 @@ ENV TOR_TARBALL_ASC $TOR_TARBALL_NAME.asc
 
 RUN apk update
 RUN apk add --no-cache \
-    make \
+    curl \
+    gnupg \
+    tzdata \
     automake \
     autoconf \
+    build-base \
     gcc \
     libtool \
-    curl \
-    libevent-dev \
-    musl \
     musl-dev \
     libgcc \
-    openssl \
-    openssl-dev \
-    openssh \
-    gnupg \
     zlib-dev \
-    tzdata
+    zlib-static \
+    openssl-dev \
+    openssl-libs-static \
+    libevent-dev \
+    libevent-static\ 
+    zstd-dev \
+    zstd-static \
+    xz-dev
 
 RUN wget $TOR_TARBALL_LINK
 RUN wget $TOR_TARBALL_LINK.asc
@@ -33,7 +37,15 @@ RUN gpg --verify $TOR_TARBALL_NAME.asc
 RUN tar xvf $TOR_TARBALL_NAME
 
 WORKDIR /tor-$TOR_VERSION
-RUN ./configure
+RUN ./configure \
+    --enable-static-tor \
+    --with-libevent-dir=/usr/lib \
+    --with-openssl-dir=/usr/lib \
+    --with-zlib-dir=/lib \
+    --disable-asciidoc \
+    --disable-manpage \
+    --disable-html-manual
+
 RUN make
 RUN make install
 
