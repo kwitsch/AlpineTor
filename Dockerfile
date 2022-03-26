@@ -59,7 +59,8 @@ COPY --from=build /usr/local/share/tor/geoip /geoip
 RUN apk update && \
     apk add --no-cache \
     curl \
-    tzdata 
+    tzdata \
+    ca-certificates
 
 ENTRYPOINT [ "tor" ]
 
