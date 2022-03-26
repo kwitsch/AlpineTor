@@ -53,11 +53,6 @@ RUN ./configure \
 RUN make
 RUN make install
 
-WORKDIR /
-RUN rm -r tor-$TOR_VERSION
-RUN rm $TOR_TARBALL_NAME
-RUN rm $TOR_TARBALL_NAME.asc
-
 FROM alpine
 COPY --from=build /usr/local/bin /usr/local/bin
 COPY --from=build /usr/local/share/tor/geoip /geoip
