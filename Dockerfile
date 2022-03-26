@@ -4,8 +4,8 @@ ARG TORVERSION
 
 ENV TOR_VERSION ${TORVERSION}
 ENV TOR_TARBALL_NAME tor-$TOR_VERSION.tar.gz
-ENV TOR_TARBALL_LINK https://dist.torproject.org/$TOR_TARBALL_NAME
-ENV TOR_TARBALL_ASC $TOR_TARBALL_NAME.asc
+ENV TOR_TARBALL_SHA $TOR_TARBALL_NAME.sha256sum
+ENV TOR_TARBALL_ASC $TOR_TARBALL_SHA.asc
 
 RUN apk update
 RUN apk add --no-cache \
@@ -28,10 +28,16 @@ RUN apk add --no-cache \
     zstd-static \
     xz-dev
 
-RUN wget $TOR_TARBALL_LINK
-RUN wget $TOR_TARBALL_LINK.asc
-RUN gpg --keyserver keys.openpgp.org --recv-keys 7A02B3521DC75C542BA015456AFEE6D49E92B601
-RUN gpg --verify $TOR_TARBALL_NAME.asc
+RUN wget https://dist.torproject.org/$TOR_TARBALL_NAME
+RUN wget https://dist.torproject.org/$TOR_TARBALL_SHA
+RUN wget https://dist.torproject.org/$TOR_TARBALL_ASC
+
+RUN gpg --auto-key-locate nodefault,wkd --locate-keys ahf@torproject.org
+RUN gpg --auto-key-locate nodefault,wkd --locate-keys dgoulet@torproject.org
+RUN gpg --auto-key-locate nodefault,wkd --locate-keys nickm@torproject.org
+RUN gpg --verify $TOR_TARBALL_ASC $TOR_TARBALL_SHA
+RUN diff -w $TOR_TARBALL_SHA <(sha256sum $TOR_TARBALL_NAME)
+
 RUN tar xvf $TOR_TARBALL_NAME
 
 WORKDIR /tor-$TOR_VERSION
