@@ -1,5 +1,4 @@
-FROM alpine:3.15
-#COPY --from=wcsiu/tdlib:1.8-alpine /lib/libz.a /usr/lib/libz.a
+FROM alpine AS build
 
 ARG TORVERSION
 
@@ -10,7 +9,6 @@ ENV TOR_TARBALL_ASC $TOR_TARBALL_NAME.asc
 
 RUN apk update
 RUN apk add --no-cache \
-    curl \
     gnupg \
     tzdata \
     automake \
@@ -53,6 +51,15 @@ WORKDIR /
 RUN rm -r tor-$TOR_VERSION
 RUN rm $TOR_TARBALL_NAME
 RUN rm $TOR_TARBALL_NAME.asc
+
+FROM alpine
+COPY --from=build /usr/local/bin /usr/local/bin
+COPY --from=build /usr/local/share/tor/geoip /geoip
+
+RUN apk update && \
+    apk add --no-cache \
+    curl \
+    tzdata 
 
 ENTRYPOINT [ "tor" ]
 
